@@ -143,6 +143,13 @@ def sea_f(var, code, ano):
 #######################################################
 #          SEA dataset converted by PPP
 #######################################################
+# Na definição da OCDE, a taxa de PPP está expressa como 
+# "moeda nacional por dólar americano" (ou seja, quantos 
+# reais são necessários para comprar o equivalente a 1 dólar
+# em poder de compra). Isso implica que a conversão correta do
+# Gross Output para dólares deve ser feita dividindo o valor
+# em reais pela taxa de PPP.
+
 
 ##### MONETARY VARIABLES
 
@@ -153,8 +160,8 @@ def sea_conv(var, code, ano):
     data = sea.query('country == @code & variable == @var')[[f'year_{ano}']] 
     data.reset_index(drop = True, inplace = True)
     
-    data_conv = np.array(data/np.array(ppp.query('code == "USA"')[[f'year_{ano}']]))
-     
+    data_conv = np.array(data/np.array(ppp.query('code == @code')[[f'year_{ano}']]))
+        
     return data_conv
 
 #sea_f(var = 'VA_QI', code = 'USA', ano = 2010)
@@ -225,7 +232,11 @@ def compute_dataset(code, ano):
     
     GDP_tot = np.repeat( np.sum(GDP_sec_data)/np.sum(lab_sec_data), i).reshape(i, 1)
     
-    return [sharelab_sec_data, share_cons_data, share_go_data, GDP_tot]
+    go_sec_usa = np.array( sea_conv('GO', 'USA', ano) ).reshape(i, 1)
+      
+    wgt_go = np.divide(go_sec, go_sec_usa[0] ).reshape(i, 1)
+    
+    return [sharelab_sec_data, share_cons_data, share_go_data, GDP_tot, wgt_go]
 
 
 
