@@ -57,6 +57,21 @@ df %>%
 
 
 
+df %>%
+  filter( code == 'AUS') %>%
+  summarise(
+    obj2 =  sum(((wgt_go_m-wgt_go_d) /wgt_go_d)^2)
+  )
+
+
+
+
+
+
+
+
+df %>%
+  filter(code == 'CYP')
 
 
 

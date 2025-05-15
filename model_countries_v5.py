@@ -9,7 +9,7 @@
 # ### Última atualização 14/05/2025
 # #################################################################################################################################
 # #### In this script I made the functions of model WITH DISTORTIONS
-# I will calibrate TFP using gross output weighted by the average sectoral average
+# I will calibrate TFP using gross output weighted by the average sectoral GO from USA
 
 
 
@@ -195,11 +195,10 @@ def out(my_A,  share_lab_d, wgt_go_d):
                          )
        
     go_usa = np.array([0.4979, 1.5412, 0.5382, 0.9384]).reshape(i, 1)
-    #p_usa = np.array([154.5245, 124.9816, 79.8704, 36.8712])   
                                
     ## GO model share
     go_m = np.multiply(G, Li) #
-    wgt_go_m = (go_m/go_usa)
+    wgt_go_m = (go_m/ np.mean(go_usa))
     
     
     eq5 = np.divide(np.multiply(np.multiply(sigma, p), np.multiply(G, Li) ), (1+tau_w) )
@@ -230,15 +229,6 @@ A = np.array([0.9775, 1.3271, 1.0949, 0.7789]).reshape(i, 1)
 out(A, share_lab_d, wgt_go_d)
 
 
-
-# v1 = np.array([0.006, 0.007, 0.016, 0.019])
-# v2= np.array([0.00001, 0.001, 0.002, 0.002])
-
-# np.sum( ((v1-v2)/ np.sum(v2) )**2)
-
-
-
-
 #%%
 
 #[p, C, B, G, GDP, GDP_sec, share_cons, Li, share_lab]
@@ -264,7 +254,7 @@ def obj1(x1, c_bar, alpha, beta, sigma, L, tau_j, tau_w, wgt_go_d):
     # GO USA
     go_usa = np.array([0.4979, 1.5412, 0.5382, 0.9384])
                                     
-    wgt_go_m = np.divide(go_m, go_usa[0] )
+    wgt_go_m = np.divide(go_m, np.sum(go_usa) ) # divide by total US
       
     ## Objective Function ####        
     obj = np.sum(np.power(np.divide(wgt_go_m - wgt_go_d, wgt_go_d ), 2)) 
@@ -321,7 +311,7 @@ sol = minimize(obj1,
 #share_lab_d = (np.ones(i)/4).reshape(i, 1)
 
     
-Bd = ( (0.001, 10), )*i  
+Bd = ( (0.001, 5), )*i  
 
 sol = differential_evolution(
     obj1,
@@ -337,6 +327,7 @@ sol = differential_evolution(
     disp=True,                 # Mostrar progresso
     updating='deferred',       # Pode ajudar com paralelismo
 )
+
 
 
 ##  Nelder-Mead
