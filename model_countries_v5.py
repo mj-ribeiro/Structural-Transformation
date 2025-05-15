@@ -84,7 +84,8 @@ w = np.ones(i).reshape(i, 1)
 share_lab_d = dt.compute_dataset(code= country, ano = year)[0]
 
 # number of workers
-L = 1 #np.sum(np.array(dt.sea_f(var = 'EMP', code = country, ano = year) ) ) / 100 # change scale
+L = np.sum(np.array(dt.sea_f(var = 'EMP', code = country, ano = year) ) ) / 1000 # change scale
+
 
 
 # Weighted Gross output for a specific year
@@ -307,10 +308,9 @@ sol = minimize(obj1,
     
 #%%
 
-#  labor share for a specific year
-#share_lab_d = (np.ones(i)/4).reshape(i, 1)
 
-    
+#np.sum(np.array(dt.sea_f(var = 'EMP', code = 'CYP', ano = year) ) ) / 100
+
 Bd = ( (0.001, 5), )*i  
 
 sol = differential_evolution(
@@ -350,7 +350,7 @@ out(sol.x, share_lab_d, wgt_go_d)
 
 res = []
 go_usa = np.array([0.4979, 1.5412, 0.5382, 0.9384]) # gross output USA
-L = 1
+#L = 1
 Bd = ( (0.000095, 10), )*i  
 my_iter = 5000
 
@@ -360,6 +360,8 @@ for country in dt.ccode:
     print('\033[1;033m---'*11)       
     print(f'Country: {country}')
     
+    L = np.sum(np.array(dt.sea_f(var = 'EMP', code = country, ano = year) ) ) / 100000
+
     # taus
     tau_w = dt.tau_w_f(code = country, ano = year)
     tau_j = dt.tau_j_f(code = country, ano = year)
@@ -451,7 +453,15 @@ for country in dt.ccode:
 
 df = pd.DataFrame(res)
 
-df.to_excel('results_go_wgt.xlsx', index = False)
+df.to_excel('results_go_wgt2.xlsx', index = False)
+
+
+
+
+#[p, C, B, G, GDP, GDP_sec, share_cons, Li, share_lab]
+
+
+
 
 
 

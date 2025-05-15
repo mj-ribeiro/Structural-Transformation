@@ -1,0 +1,238 @@
+
+---
+title: "Calibration Results Analysis"
+author: "Marcos J Ribeiro"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: false
+    number_sections: true
+    highlight: pygments
+    df_print: paged
+---
+
+
+```{css, echo = FALSE}
+
+table, td, th {
+  border: none;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+p{
+  text-align: justify;
+}
+
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,       # Suprime a exibição do código
+  warning = FALSE,    # Suprime as mensagens de warning
+  message = FALSE     # Suprime as mensagens de message
+)
+```
+
+
+```{r load_libraries}
+diretorio = dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(diretorio)
+source('functions.r')
+library(readxl)
+library(tidyverse)
+library(ggrepel)
+library(WDI)
+```
+
+
+
+```{r load_data}
+
+### World Bank dataset
+
+wbk = WDI(
+  indicator = c('NY.GDP.PCAP.PP.KD', 'SL.GDP.PCAP.EM.KD'),
+  start = 2014, 
+  end = 2014,
+  extra = TRUE) %>%
+  tibble() %>%
+  rename(gdp_pp = NY.GDP.PCAP.PP.KD,
+         gdp_pw = SL.GDP.PCAP.EM.KD) %>%
+  select(iso3c, gdp_pp, gdp_pw, income) %>%
+  rename(code = iso3c)
+
+
+## dataset
+df = readxl::read_xlsx('results_go_wgt2.xlsx') %>%
+      left_join(., wbk, by = 'code')  %>%
+       filter(code != 'CYP')
+
+
+```
+
+
+## Introduction
+
+In this document, I analyze the calibration results. I calibrated the TFP using the sectoral gross output relative to the sectoral average gross output from the US, from data and model. For the model, I used the results of gross output from previous calibration that I did to US. The objective
+function that I proposed is:
+
+$$Obj = \sum_i^N \left( \frac{ WGO_i^M - WGO_i^D }{WGO_i^D} \right)^2$$
+Where
+
+$WGO_i^D = GO_i^D/ \bar{GO}_{US}^D$
+
+$WGO_i^M = GO_i^M/ \bar{GO}_{US}^M$
+
+The superscripts M and D means model and data, respectively.
+
+The main advantages of this approach are:
+
+- It is easy to calibrate
+
+- The objective function converges to zero in almost all countries
+
+- It is easy to explain
+
+- The results make economic sense
+
+- The correlation between labor shares from data and the model is 90%
+
+Observations:
+
+- I used a dataset 2014.
+
+- The GDP per person employed tnat I used here is from World Bank.
+
+- I didn't use L=1, instead I used labor (from SEA) per hundred million inhabitants. This makes more sense when comparing country results.
+
+- I removed Cyprus because it is a very small economy and the calibration for
+this country is very unstable.
+
+
+## Plots
+
+### Weighted GO from data and model - Adjustment
+
+Excluding China Industry only to view better.
+
+ 
+```{r plot_weights}
+df %>%
+  mutate(chave = paste(code, sectors, sep = '_')) %>%
+  filter(chave != 'CHN_Industry') %>%
+  ggplot(., aes(x = wgt_go_m, y = wgt_go_d)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, size = 0.5) +
+  ylab('Weighted GO - Data') +
+  xlab('Weighted GO - Model') +
+  theme_minimal()+
+  my_theme
+```
+
+### Labor Share from model and data
+
+Plotting model vs. data labor shares.
+
+```{r plot_labor_share}
+df %>%
+  ggplot(., aes(x = share_lab_m, y = share_lab_d)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, size = 0.5) +
+  geom_text_repel(aes(label = code), size = 2.5, max.overlaps = 10) +
+  ylab('Labor Share - Data') +
+  xlab('Labor Share - Model') +
+  theme_minimal()+
+  my_theme
+```
+
+### Correlation 
+
+The correlation between model and data labor shares is high.
+
+```{r correlation}
+cor(df$share_lab_m, df$share_lab_d)
+```
+
+### Descriptive Statistics for TFP
+
+Summarizing TFP statistics by sector. On average, the modern
+services sector is the most productive sector, followed by traditional services.
+
+```{r tfp_stats}
+df %>%
+  group_by(sectors) %>%
+  summarise(tfp_avg = mean(tfp),
+            tfp_min = min(tfp),
+            tfp_max = max(tfp),
+            tfp_sd = sd(tfp)) %>%
+  mutate_if(is.numeric, round, 2) %>%
+  DT::datatable()
+```
+
+
+
+## TFP and other variables
+
+
+### TFP and GDP per person employed
+
+As we expected, there is a positive correlation between TFP and GDP per person employed in almost
+all sectors.
+
+
+```{r}
+
+df %>%
+  mutate(gdp_pw = gdp_pw/gdp_pw[code == 'USA']) %>%
+  ggplot(aes(y = tfp, x = (gdp_pw) )) +
+  geom_point() +
+  geom_text_repel(aes(label = code), size = 2.5, max.overlaps = 10) +
+  geom_smooth(method = 'lm', se = F) +
+  facet_wrap(~sectors, nrow = 2, ncol = 2, scales = 'free') +
+  theme_light() +
+  #my_theme +
+  ylab('Calibrated TFP') +
+  xlab('Log of GDP per person\n employed (USA = 1)')
+
+
+
+```
+
+
+### GDP per worker and Aggregate TFP
+
+Aggregate TFP is the sum of sectoral TFP weighted by labor share in each sector. The GDP per 
+person employed is from World Bank.
+
+```{r}
+
+df %>%
+  mutate(
+    tfp_agg = share_lab_m*tfp,
+    gdp_pw = gdp_pw/gdp_pw[code == 'USA']
+  ) %>%
+  filter(code != 'CYP') %>%
+  group_by(code) %>%
+  mutate(tfp_agg = sum(tfp_agg)) %>%
+  filter(sectors == 'Agriculture') %>%
+  ggplot(aes(x = gdp_pw, y = tfp_agg )) +
+  geom_point() +
+  geom_text_repel(aes(label = code), size = 2.5, max.overlaps = 10) +
+  geom_smooth(method = 'lm', se = F) +
+  ylab('Aggregate TFP') +
+  xlab('GDP per person employed (USA = 1)') +
+  my_theme
+  
+```
+
+
+
+
+
+

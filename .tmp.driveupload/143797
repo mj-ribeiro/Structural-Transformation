@@ -1,0 +1,104 @@
+
+---
+title: "Calibration Results Analysis"
+author: "Marcos J Ribeiro"
+date: "2025-05-15"
+output:
+  html_document:
+    toc: false
+    number_sections: true
+    highlight: pygments
+    df_print: paged
+---
+
+
+<style type="text/css">
+
+table, td, th {
+  border: none;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+p{
+  text-align: justify;
+}
+
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+## Introduction
+
+In this document, I analyze the calibration results. I calibrated the TFP using the sectoral gross output relative to the sectoral average gross output from the US. The main advantages are:
+
+- It is easy to calibrate
+
+- The objective function converges to zero in almost all countries
+
+- It is easy to explain
+
+- The results make economic sense
+
+- The correlation between labor shares from data and the model is 90%
+
+
+## Plots
+
+### Weighted GO from data and model - Adjustment
+
+Excluding China Industry only to view better.
+
+ 
+<img src="calibration_analysis_files/figure-html/plot_weights-1.png" width="672" />
+
+### Labor Share from model and data
+
+Plotting model vs. data labor shares.
+
+<img src="calibration_analysis_files/figure-html/plot_labor_share-1.png" width="672" />
+
+### Correlation 
+
+Correlation between model and data labor shares.
+
+
+```
+## [1] 0.9046832
+```
+
+### Descriptive Statistics for TFP
+
+Summarizing TFP statistics by sector.
+
+
+```{=html}
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-6837e91abc511b0aedb5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-6837e91abc511b0aedb5">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["Agriculture","Industry","Modern Services","Traditional Services"],[2.44,4.44,5.4,5.28],[0.97,2.85,3.1,2.64],[4.23,5.96,7.68,9.94],[0.85,0.74,0.89,1.13]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>sectors<\/th>\n      <th>tfp_avg<\/th>\n      <th>tfp_min<\/th>\n      <th>tfp_max<\/th>\n      <th>tfp_sd<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+```
+
+
+
+## TFP and other variables
+
+
+### TFP and GDP per person employed
+
+There is a positive correlation between TFP and GDP per person employed.
+
+<img src="calibration_analysis_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+
+
