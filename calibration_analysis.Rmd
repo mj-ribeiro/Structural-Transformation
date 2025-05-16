@@ -103,13 +103,20 @@ The main advantages of this approach are:
 
 - The correlation between labor shares from data and the model is 90%
 
+- The correlation between intermediate inputs share from data and the model is also high
+
 Observations:
 
 - I used a dataset 2014.
 
 - The GDP per person employed tnat I used here is from World Bank.
 
-- I didn't use L=1, instead I used labor (from SEA) per hundred million inhabitants. This makes more sense when comparing country results.
+- I didn't use L=1, instead I used labor (from SEA) per hundred million inhabitants. This makes more sense when comparing country results. I noticed that normalizing L=1 overestimates productivity per worker in low-income countries.
+
+Case 1  L = 1: By equalizing labor endowments, the model forces differences in GDP to be explained by productivity. Low-income countries need higher A to compensate for their lower income levels despite having the same labor input.
+
+Case 2 (actual L): When labor endowments reflect reality, low-income countries’ larger workforces naturally increase output, reducing the need for high A. High-income countries, with smaller workforces, rely on higher productivity to achieve high income levels.
+
 
 - I removed Cyprus because it is a very small economy and the calibration for
 this country is very unstable.
@@ -151,13 +158,36 @@ df %>%
   my_theme
 ```
 
-### Correlation 
+### Correlation of labor shares from data and model
 
 The correlation between model and data labor shares is high.
 
 ```{r correlation}
 cor(df$share_lab_m, df$share_lab_d)
 ```
+
+
+### Intermediate Inputs Share from model and data
+
+```{r}
+####
+df %>%
+  filter(code != 'CYP') %>%
+  group_by(code) %>%
+  mutate(s_ii = sum(share_ii_m),
+         share_ii_m = share_ii_m/s_ii) %>%
+  ungroup() %>%
+  ggplot(aes(x = share_ii_m, y = share_ii_d )) +
+  geom_point() +
+  geom_text_repel(aes(label = code), size = 2.5, max.overlaps = 10) +
+  geom_abline(intercept = 0, slope = 1, size = 0.5) +
+  ylab('Share of intermediate \n inputs - Data') +
+  xlab('Share of intermediate inputs - Model') +
+  my_theme
+```
+
+
+## Calibrated TFP
 
 ### Descriptive Statistics for TFP
 
@@ -177,13 +207,9 @@ df %>%
 
 
 
-## TFP and other variables
+### TFP and GDP per person employed 
 
-
-### TFP and GDP per person employed
-
-As we expected, there is a positive correlation between TFP and GDP per person employed in almost
-all sectors.
+As we expected, there is a positive correlation between TFP and GDP per person employed in almost all sectors.
 
 
 ```{r}
@@ -205,10 +231,9 @@ df %>%
 ```
 
 
-### GDP per worker and Aggregate TFP
+### Aggregate TFP and GDP per worker 
 
-Aggregate TFP is the sum of sectoral TFP weighted by labor share in each sector. The GDP per 
-person employed is from World Bank.
+Aggregate TFP is the sum of sectoral TFP weighted by labor share in each sector. The GDP per person employed is from World Bank.
 
 ```{r}
 

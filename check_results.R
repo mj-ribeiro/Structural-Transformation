@@ -109,7 +109,7 @@ df %>%
   
 
 
-
+## GDP per worker and TFP aggregate
 df %>%
   mutate(
     tfp_agg = share_lab_m*tfp,
@@ -128,5 +128,24 @@ df %>%
   my_theme
   
   
+####
+df %>%
+  filter(code != 'CYP') %>%
+  group_by(code) %>%
+  mutate(s_ii = sum(share_ii_m),
+         share_ii_m = share_ii_m/s_ii) %>%
+  ungroup() %>%
+  ggplot(aes(x = share_ii_m, y = share_ii_d )) +
+  geom_point() +
+  geom_text_repel(aes(label = code), size = 2.5, max.overlaps = 10) +
+  geom_abline(intercept = 0, slope = 1, size = 0.5) +
+  ylab('Share of intermediate inputs - Data') +
+  xlab('Share of intermediate inputs - Model') +
+  my_theme
+
+
+
+df %>%
+  filter(code == 'CHN')
 
 

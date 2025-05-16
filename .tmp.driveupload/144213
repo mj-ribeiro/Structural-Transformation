@@ -1,0 +1,152 @@
+
+---
+title: "Calibration Results Analysis"
+author: "Marcos J Ribeiro"
+date: "2025-05-16"
+output:
+  html_document:
+    toc: false
+    number_sections: true
+    highlight: pygments
+    df_print: paged
+---
+
+
+<style type="text/css">
+
+table, td, th {
+  border: none;
+  padding-left: 1em;
+  padding-right: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+p{
+  text-align: justify;
+}
+
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+## Introduction
+
+In this document, I analyze the calibration results. I calibrated the TFP using the sectoral gross output relative to the sectoral average gross output from the US, from data and model. For the model, I used the results of gross output from previous calibration that I did to US. The objective
+function that I proposed is:
+
+$$Obj = \sum_i^N \left( \frac{ WGO_i^M - WGO_i^D }{WGO_i^D} \right)^2$$
+Where
+
+$WGO_i^D = GO_i^D/ \bar{GO}_{US}^D$
+
+$WGO_i^M = GO_i^M/ \bar{GO}_{US}^M$
+
+The superscripts M and D means model and data, respectively.
+
+The main advantages of this approach are:
+
+- It is easy to calibrate
+
+- The objective function converges to zero in almost all countries
+
+- It is easy to explain
+
+- The results make economic sense
+
+- The correlation between labor shares from data and the model is 90%
+
+- The correlation between intermediate inputs share from data and the model is also high
+
+Observations:
+
+- I used a dataset 2014.
+
+- The GDP per person employed tnat I used here is from World Bank.
+
+- I didn't use L=1, instead I used labor (from SEA) per hundred million inhabitants. This makes more sense when comparing country results. I noticed that normalizing L=1 overestimates productivity per worker in low-income countries.
+
+Case 1  L = 1: By equalizing labor endowments, the model forces differences in GDP to be explained by productivity. Low-income countries need higher A to compensate for their lower income levels despite having the same labor input.
+
+Case 2 (actual L): When labor endowments reflect reality, low-income countries’ larger workforces naturally increase output, reducing the need for high A. High-income countries, with smaller workforces, rely on higher productivity to achieve high income levels.
+
+
+- I removed Cyprus because it is a very small economy and the calibration for
+this country is very unstable.
+
+
+## Plots
+
+### Weighted GO from data and model - Adjustment
+
+Excluding China Industry only to view better.
+
+ 
+<img src="calibration_analysis_files/figure-html/plot_weights-1.png" width="672" />
+
+### Labor Share from model and data
+
+Plotting model vs. data labor shares.
+
+<img src="calibration_analysis_files/figure-html/plot_labor_share-1.png" width="672" />
+
+### Correlation of labor shares from data and model
+
+The correlation between model and data labor shares is high.
+
+
+```
+## [1] 0.9061398
+```
+
+
+### Intermediate Inputs Share from model and data
+
+<img src="calibration_analysis_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+
+
+## Calibrated TFP
+
+### Descriptive Statistics for TFP
+
+Summarizing TFP statistics by sector. On average, the modern
+services sector is the most productive sector, followed by traditional services.
+
+
+```{=html}
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-fc01d41ee3f6aae3023f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-fc01d41ee3f6aae3023f">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4"],["Agriculture","Industry","Modern Services","Traditional Services"],[2.44,4.45,5.4,5.16],[0.97,2.85,3.1,2.64],[4.23,5.96,7.68,6.32],[0.86,0.75,0.9,0.84]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>sectors<\/th>\n      <th>tfp_avg<\/th>\n      <th>tfp_min<\/th>\n      <th>tfp_max<\/th>\n      <th>tfp_sd<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+```
+
+
+
+### TFP and GDP per person employed 
+
+As we expected, there is a positive correlation between TFP and GDP per person employed in almost all sectors.
+
+
+<img src="calibration_analysis_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+
+
+### Aggregate TFP and GDP per worker 
+
+Aggregate TFP is the sum of sectoral TFP weighted by labor share in each sector. The GDP per person employed is from World Bank.
+
+<img src="calibration_analysis_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+
+
+
+
+
+

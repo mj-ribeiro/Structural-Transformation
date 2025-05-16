@@ -236,7 +236,11 @@ def compute_dataset(code, ano):
       
     wgt_go = np.divide(go_sec, np.mean(go_sec_usa) ).reshape(i, 1)
     
-    return [sharelab_sec_data, share_cons_data, share_go_data, GDP_tot, wgt_go]
+    ii_sec = np.array( sea_conv('II', code, ano) ).reshape(i, 1)
+    share_ii_data = np.divide(ii_sec, np.sum(ii_sec) )
+    
+    return [sharelab_sec_data, share_cons_data, share_go_data, GDP_tot, wgt_go, share_ii_data]
+
 
 
 

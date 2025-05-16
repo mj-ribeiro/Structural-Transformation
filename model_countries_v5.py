@@ -6,7 +6,7 @@
 # 
 # #################################################################################################################################
 # ### Marcos J Ribeiro
-# ### Última atualização 14/05/2025
+# ### Última atualização 15/05/2025
 # #################################################################################################################################
 # #### In this script I made the functions of model WITH DISTORTIONS
 # I will calibrate TFP using gross output weighted by the average sectoral GO from USA
@@ -84,7 +84,7 @@ w = np.ones(i).reshape(i, 1)
 share_lab_d = dt.compute_dataset(code= country, ano = year)[0]
 
 # number of workers
-L = np.sum(np.array(dt.sea_f(var = 'EMP', code = country, ano = year) ) ) / 1000 # change scale
+L = np.sum(np.array(dt.sea_f(var = 'EMP', code = country, ano = year) ) ) / 100000 # change scale
 
 
 
@@ -128,7 +128,7 @@ def equilibrium_code(x1, c_bar, alpha, beta, sigma, L, tau_j, tau_w, i = i):
     
     #### Objects B and G ####        
     # Object B  (X/L)
-    B = np.multiply(np.divide( (1+ tau_w), (1 + tau_j) ), \
+    B = np.multiply(np.divide( (1 + tau_w), (1 + tau_j) ), \
                     np.multiply(np.multiply(np.divide(sig1, sigma), np.divide(beta, p.T) ), w) )
     
     # Object G  (Q/L)
@@ -410,7 +410,10 @@ for country in dt.ccode:
     print(f'\033[1;033mObjective: {num(sol.fun)}')
     
     print('\033[1;033mRun Model!')    
-    ## run equilibrium
+    
+    ## Run equilibrium
+    
+    #[p, C, B, G, GDP, GDP_sec, share_cons, Li, share_lab]
     model = equilibrium_code(x1 = sol.x, 
                       c_bar = c_bar, 
                       alpha = alpha,
@@ -423,10 +426,24 @@ for country in dt.ccode:
     
     print(f'TFP: {num(sol.x)}')
     
-    ## GO model share
+    ## GROSS OUTPUT SHARE
+    ## GO share - model
     go_m = np.multiply(model[3], model[7]) #
-                               
+    share_go_m = go_m/np.sum(go_m)
+    
+    # GO share - data
+    share_go_d = dt.compute_dataset(code = country, ano = year)[2]
+    
+    ## weighted GO
     wgt_go_m = (go_m/ np.sum(go_usa) )
+    
+    ## INTERMEDIATE INPUT DATA
+    ## II share - data
+    share_ii_d = dt.compute_dataset(code = country, ano = year)[5]
+    
+    ## II share - model
+    ii_m = np.sum(np.multiply(model[2], model[7]), axis = 0).reshape(i, 1)
+    share_ii_m = ii_m/np.sum(ii_m)
     
     ## labor
     tot_lab = np.sum(model[7])
@@ -441,8 +458,12 @@ for country in dt.ccode:
             'sectors': my_groups,
             'wgt_go_m': wgt_go_m[ii].item(),
             'wgt_go_d': wgt_go_d[ii].item(),
-            'share_lab_m': model[8][ii].item(),
-            'share_lab_d': share_lab_d[ii].item(),
+            'share_lab_m':model[8][ii].item(),
+            'share_lab_d':share_lab_d[ii].item(),
+            'share_go_m': share_go_m[ii].item(),
+            'share_go_d': share_go_d[ii].item(),
+            'share_ii_m': share_ii_m[ii].item(),
+            'share_ii_d': share_ii_d[ii].item(),
             'tfp': sol.x[ii].item(),       
             'GDP': tot_lab, 
             'obj': sol.fun,
